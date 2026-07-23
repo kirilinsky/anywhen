@@ -20,8 +20,8 @@
 
 <p align="center">
   <a href="https://anywhen-kappa.vercel.app/">▸ live demo</a>
-  &nbsp;·&nbsp;
-  <a href="https://anymany.vercel.app/">▸ anymany</a>
+  &nbsp;·&nbsp; 
+  <a href="https://anyfamily.site/">▸ any family</a>
 </p>
 
 ---
@@ -126,15 +126,17 @@ The `mode` option picks the rendering strategy. Default is `"smart"`.
 Context-aware. Picks the most readable format based on distance from now —
 covers past and future.
 
+Calendar labels are symmetric — past and future read the same way:
+
 ```ts
 anywhen(date, { locale: "en" });
 // < 45s            → "now"
-// < 1 hour         → "10 minutes ago"
-// future > 1 hour  → "in 2 weeks"
+// < 1 hour         → "10 minutes ago"  /  "in 10 minutes"
 // same day         → "today, 14:35"
 // yesterday        → "yesterday, 09:00"
-// < 7 days         → "Wednesday, 11:20"
-// older            → "Feb 5, 2016"
+// tomorrow         → "tomorrow, 09:00"
+// within 7 days    → "Wednesday, 11:20"  (past or future)
+// older / further  → "Feb 5, 2016"
 
 anywhen(date, { locale: "en", time: false });
 // "yesterday"  — clock removed
@@ -210,17 +212,17 @@ Reads: `locale`, `now`, `numeric`, `style`, `thresholds`.
 
 ## options
 
-| Option     | Type                            | Default          | Used by              |
-| ---------- | ------------------------------- | ---------------- | -------------------- |
-| `mode`     | `"smart" \| "absolute" \| "relative"` | `"smart"`        | —                    |
-| `locale`   | `string \| string[]`            | runtime locale   | all                  |
-| `now`      | `Date \| number \| string`      | current time     | smart, relative      |
-| `timeZone` | `string`                        | runtime timezone | smart, absolute      |
-| `time`     | `boolean`                       | `true`           | smart                |
-| `numeric`  | `boolean`                       | `false`          | relative             |
-| `style`    | `"long" \| "short" \| "narrow"` | `"long"`         | smart, relative      |
-| `format`   | `Intl.DateTimeFormatOptions`    | `{ day, month, year }` | absolute       |
-| `thresholds` | `Partial<Record<unit, number>>` | built-in table   | smart, relative      |
+| Option       | Type                                  | Default                | Used by         |
+| ------------ | ------------------------------------- | ---------------------- | --------------- |
+| `mode`       | `"smart" \| "absolute" \| "relative"` | `"smart"`              | —               |
+| `locale`     | `string \| string[]`                  | runtime locale         | all             |
+| `now`        | `Date \| number \| string`            | current time           | smart, relative |
+| `timeZone`   | `string`                              | runtime timezone       | smart, absolute |
+| `time`       | `boolean`                             | `true`                 | smart           |
+| `numeric`    | `boolean`                             | `false`                | relative        |
+| `style`      | `"long" \| "short" \| "narrow"`       | `"long"`               | smart, relative |
+| `format`     | `Intl.DateTimeFormatOptions`          | `{ day, month, year }` | absolute        |
+| `thresholds` | `Partial<Record<unit, number>>`       | built-in table         | smart, relative |
 
 Each mode reads only the options that apply to it. The rest are ignored.
 
@@ -239,9 +241,10 @@ anywhen(date, { locale: "en", thresholds: { second: 120 } });
 // smart mode: "now" covers the first 2 minutes
 ```
 
-In smart mode `thresholds.second` widens the `"now"` window, and the full
-table applies to future dates. Calendar labels (`today`, `yesterday`,
-weekday) are not affected.
+In smart mode `thresholds.second` widens the `"now"` window and
+`thresholds.minute` the sub-hour minutes window, symmetrically in both
+directions. Calendar labels (`today`, `yesterday`, `tomorrow`, weekday) and the
+absolute fallback are not affected.
 
 ---
 
@@ -314,15 +317,15 @@ Pass any valid BCP 47 tag — including regional variants like `en-GB`, `zh-TW`,
 `pt-BR`. Fallback arrays also work.
 
 ```ts
-anywhen(date, { locale: "de" });           // "gestern, 14:35"
-anywhen(date, { locale: "ru" });           // "вчера, 14:35"
-anywhen(date, { locale: "fr" });           // "hier, 14:35"
+anywhen(date, { locale: "de" }); // "gestern, 14:35"
+anywhen(date, { locale: "ru" }); // "вчера, 14:35"
+anywhen(date, { locale: "fr" }); // "hier, 14:35"
 anywhen(date, { locale: ["sr-Latn-RS", "en"] });
 
-anywhen(date, { mode: "absolute", locale: "ja" });   // "2016年2月5日"
-anywhen(date, { mode: "absolute", locale: "ar" });   // "٥ فبراير ٢٠١٦"
+anywhen(date, { mode: "absolute", locale: "ja" }); // "2016年2月5日"
+anywhen(date, { mode: "absolute", locale: "ar" }); // "٥ فبراير ٢٠١٦"
 
-anywhen(date, { mode: "relative", locale: "tr" });   // "3 saat önce"
+anywhen(date, { mode: "relative", locale: "tr" }); // "3 saat önce"
 ```
 
 When omitted, native `Intl` uses the runtime locale.
@@ -331,12 +334,12 @@ When omitted, native `Intl` uses the runtime locale.
 
 ## vs the alternatives
 
-|                     |  anywhen  | dayjs | date-fns |
-| ------------------- | :-------: | :---: | :------: |
+|                     |  anywhen   | dayjs | date-fns |
+| ------------------- | :--------: | :---: | :------: |
 | gzip                | **~1.3kb** | ~7kb  |  ~20kb   |
-| locale data bundled |  **no**   |  yes  |   yes    |
-| locales             | **200+**  |  140  |   100    |
-| dependencies        |   **0**   |   0   |    0     |
+| locale data bundled |   **no**   |  yes  |   yes    |
+| locales             |  **200+**  |  140  |   100    |
+| dependencies        |   **0**    |   0   |    0     |
 
 ---
 
@@ -357,3 +360,13 @@ Workers · Deno
 
 CI runs the full suite on Node 20, 22, and 24. Older runtimes down to
 Node 18 work but are not tested on every release.
+
+---
+
+## the any family
+
+anywhen is part of **any family** — a set of tiny, zero-dependency,
+native-first utilities.
+
+- [any family site](https://anyfamily.site/)
+- [anyfamily on npm](https://www.npmjs.com/package/anyfamily)
